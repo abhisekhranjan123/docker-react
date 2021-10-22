@@ -1,0 +1,29 @@
+pipeline {
+    def buildNumber=BUILD_NUMBER
+        stage("Git Clone From Repo")
+        {
+        git url:'https://github.com/abhisekhranjan123/docker-react',branch:'master'    
+        }
+        stage("Build Docker Images")
+        {
+        
+        sh "docker build -t abhisekhranjan123/docker-react:${buildNumber} ."
+        }
+    
+        stage("Push Docker Images Docker Hub")
+        {
+            withCredentials([string(credentialsId: 'Docker_Hub_Pwd', variable: 'Docker_Hub_Pwd')])
+                {
+                     sh "docker login -u abhisekhranjan123 -p ${Docker_Hub_Pwd}"
+                }
+             sh "docker push abhisekhranjan123/docker-react:${buildNumber}"
+        }
+            stage("Publishing Docker Images On Dev-Web Server "){
+                 sshagent(['DOCKER_SERVER'])
+                 {
+                      sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker rm -f docker-react || true"
+                      sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 80:80 --name docker-react abhisekhranjan123/docker-react:${buildNumber}"
+                }
+
+}
+}
