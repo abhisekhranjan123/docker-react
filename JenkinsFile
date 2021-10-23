@@ -9,7 +9,7 @@ node {
         stage("Code Quality Review")
             {
                 
-                    echo "Ok"
+                    echo "We Will Connecting Sonarqube Later for code quality checks"
                
             }  
        stage("Building Docker Image Of Application") 
