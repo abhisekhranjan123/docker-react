@@ -22,7 +22,7 @@ pipeline {
                  sshagent(['DOCKER_SERVER'])
                  {
                       sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker rm -f docker-react || true"
-                      sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 80:80 --name docker-react abhisekhranjan123/docker-react:${buildNumber}"
+                      sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 3000:3000 --name docker-react abhisekhranjan123/docker-react:${buildNumber}"
                 }
 
 }
