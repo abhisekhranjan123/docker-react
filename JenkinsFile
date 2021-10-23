@@ -1,16 +1,24 @@
-pipeline {
+node {
+ 
+
     def buildNumber=BUILD_NUMBER
-        stage("Git Clone From Repo")
+        stage("Cloning The Git Repo")
         {
-        git url:'https://github.com/abhisekhranjan123/docker-react',branch:'master'    
+        git branch: 'main', credentialsId: 'Handsek_GIT_Jenkins', url: 'https://github.com/abhisekhranjan123/docker-react.git'   
         }
-        stage("Build Docker Images")
+        stage("Code Quality Review")
+            {
+                
+                    echo "Ok"
+               
+            }  
+       stage("Building Docker Image Of Application") 
         {
         
         sh "docker build -t abhisekhranjan123/docker-react:${buildNumber} ."
         }
     
-        stage("Push Docker Images Docker Hub")
+        stage("Docker Image Of Application Pushing to the DockerHub") 
         {
             withCredentials([string(credentialsId: 'Docker_Hub_Pwd', variable: 'Docker_Hub_Pwd')])
                 {
@@ -18,11 +26,11 @@ pipeline {
                 }
              sh "docker push abhisekhranjan123/docker-react:${buildNumber}"
         }
-            stage("Publishing Docker Images On Dev-Web Server "){
+           stage("Making Apllication Live On Web Server "){
                  sshagent(['DOCKER_SERVER'])
                  {
                       sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker rm -f docker-react || true"
-                      sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 3000:3000 --name docker-react abhisekhranjan123/docker-react:${buildNumber}"
+                     sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 3000:3000 --name docker-react abhisekhranjan123/docker-react:${buildNumber}"
                 }
 
 }
