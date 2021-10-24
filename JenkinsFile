@@ -1,4 +1,4 @@
-pipeline { node {
+node {
  
 
     def buildNumber=BUILD_NUMBER
@@ -33,6 +33,5 @@ pipeline { node {
                      sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 80:80 --name docker-react abhisekhranjan123/docker-react:${buildNumber}"
                 }
 
-}
 }
 }
