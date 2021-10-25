@@ -33,10 +33,24 @@ pipeline {
         }
       }
     }
+    /*stage("Quality gate") {
+      steps {
+        script {
+          def qualitygate = waitForQualityGate()
+          sleep(10)
+          if (qualitygate.status != "OK") {
+            waitForQualityGate abortPipeline: true
+          }
+        }
+      }
+    }*/
     stage("Building Docker Image Of Application") 
         {
         steps{
-        sh "docker build -t abhisekhranjan123/docker-react:${buildNumber} ."
+                echo "The build number is ${env.BUILD_NUMBER}"
+                echo "You can also use \${BUILD_NUMBER} -> ${BUILD_NUMBER}"
+                sh 'echo "I can access $BUILD_NUMBER in shell command as well."'
+                sh "docker build -t abhisekhranjan123/docker-react:${BUILD_NUMBER} ."
         }
         }
     
@@ -46,15 +60,15 @@ pipeline {
                 {
                      sh "docker login -u abhisekhranjan123 -p ${Docker_Hub_Pwd}"
                 }
-             sh "docker push abhisekhranjan123/docker-react:${buildNumber}"
+             sh "docker push abhisekhranjan123/docker-react:${BUILD_NUMBER}"
         }
         }
            stage("Making Apllication Live On Web Server "){
            steps{
                  sshagent(['DOCKER_SERVER'])
                  {
-                      sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker rm -f docker-react || true"
-                     sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 80:80 --name docker-react abhisekhranjan123/docker-react:${buildNumber}"
+                     sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker rm -f docker-react || true"
+                     sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 80:80 --name docker-react abhisekhranjan123/docker-react:${BUILD_NUMBER}"
                 }
            }
 
