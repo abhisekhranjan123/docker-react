@@ -1,24 +1,46 @@
-node {
- 
-
-    def buildNumber=BUILD_NUMBER
-        stage("Cloning The Git Repo")
-        {
-        git branch: 'main', credentialsId: 'Handsek_GIT_Jenkins', url: 'https://github.com/abhisekhranjan123/docker-react.git'   
+pipeline {
+  agent {
+    label 'master'
+  }
+  tools {
+    nodejs 'nodejs'
+  }
+  options {
+    // This is required if you want to clean before build
+    skipDefaultCheckout(true)
+  }
+  stages {
+    stage('Clone SCM for sonar') {
+      steps {
+        // Clean before build
+        cleanWs()
+        git branch: 'master', 
+        credentialsId: 'Handsek_GIT_Jenkins', 
+        url: 'https://github.com/abhisekhranjan123/docker-react.git'
+      }
+    }
+    stage('SonarQube analysis') {
+      steps {
+        script {
+    
+          withSonarQubeEnv('sonar') {
+            sh "${tool("sonar")}/bin/sonar-scanner \
+  -Dsonar.projectKey=reactjsproject \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://13.233.56.169:9000 \
+  -Dsonar.login=6a9f406d44edf8611af671e2179a2f6adf0d03c7"
+          }
         }
-        stage("Code Quality Review")
-            {
-                
-                    echo "#We Will Connecting Sonarqube Later for code quality checks"
-               
-            }  
-       stage("Building Docker Image Of Application") 
+      }
+    }
+    stage("Building Docker Image Of Application") 
         {
-        
+        steps{
         sh "docker build -t abhisekhranjan123/docker-react:${buildNumber} ."
         }
+        }
     
-        stage("Docker Image Of Application Pushing to the DockerHub") 
+        stage("Docker Image Of Application Pushing to the DockerHub") {steps
         {
             withCredentials([string(credentialsId: 'Docker_Hub_Pwd', variable: 'Docker_Hub_Pwd')])
                 {
@@ -26,12 +48,16 @@ node {
                 }
              sh "docker push abhisekhranjan123/docker-react:${buildNumber}"
         }
+        }
            stage("Making Apllication Live On Web Server "){
+           steps{
                  sshagent(['DOCKER_SERVER'])
                  {
                       sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker rm -f docker-react || true"
                      sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.13.234 docker run -d -p 80:80 --name docker-react abhisekhranjan123/docker-react:${buildNumber}"
                 }
+           }
 
+}
 }
 }
