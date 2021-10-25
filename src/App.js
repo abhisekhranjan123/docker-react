@@ -11,7 +11,7 @@ class App extends Component {
           <h1 className="App-title">Welcome to Premiss-CICD Demo Project For  React</h1>
         </header>
         <p className="App-intro">
-          I was changed on the Feature branch
+          I was changed on the Feature branch in next time.
         </p>
       </div>
     );
